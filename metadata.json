@@ -1,0 +1,6 @@
+{
+  "name": "CrowdPulse",
+  "description": "Real-time crowd visibility and management system for large sporting venues. Monitor zone density, get smart suggestions, and report incidents.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
