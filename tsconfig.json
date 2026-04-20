@@ -11,6 +11,6 @@
   "include": [
     "src",
     "components",
-    "server.ts"
+    "*.ts"
   ]
 }
