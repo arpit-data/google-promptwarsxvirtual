@@ -19,7 +19,7 @@ async function startServer() {
     },
   });
 
-  const PORT = 3000;
+  const PORT = process.env.PORT || 8080;
 
   app.use(express.json());
 
@@ -31,11 +31,11 @@ async function startServer() {
 
   app.get('/api/suggestions', (req, res) => {
     const zones = db.prepare('SELECT * FROM zones').all() as any[];
-    
+
     // Suggest least crowded gate
     const gates = zones.filter(z => z.id.startsWith('gate'));
-    const leastCrowdedGate = gates.reduce((prev, curr) => ((prev.crowd_count/prev.capacity) < (curr.crowd_count/curr.capacity) ? prev : curr));
-    const mostCrowdedGate = gates.reduce((prev, curr) => ((prev.crowd_count/prev.capacity) > (curr.crowd_count/curr.capacity) ? prev : curr));
+    const leastCrowdedGate = gates.reduce((prev, curr) => ((prev.crowd_count / prev.capacity) < (curr.crowd_count / curr.capacity) ? prev : curr));
+    const mostCrowdedGate = gates.reduce((prev, curr) => ((prev.crowd_count / prev.capacity) > (curr.crowd_count / curr.capacity) ? prev : curr));
 
     const suggestions = [];
     if (mostCrowdedGate.crowd_count / mostCrowdedGate.capacity > 0.8) {
@@ -48,10 +48,10 @@ async function startServer() {
 
     // Suggest least crowded service area
     const foodAreas = zones.filter(z => z.id.includes('food'));
-    const bestFoodArea = foodAreas.length > 0 ? foodAreas.reduce((prev, curr) => ((prev.crowd_count/prev.capacity) < (curr.crowd_count/curr.capacity) ? prev : curr)) : null;
-    
+    const bestFoodArea = foodAreas.length > 0 ? foodAreas.reduce((prev, curr) => ((prev.crowd_count / prev.capacity) < (curr.crowd_count / curr.capacity) ? prev : curr)) : null;
+
     if (bestFoodArea && bestFoodArea.crowd_count / bestFoodArea.capacity < 0.4) {
-      const mostCrowdedFood = foodAreas.reduce((prev, curr) => ((prev.crowd_count/prev.capacity) > (curr.crowd_count/curr.capacity) ? prev : curr));
+      const mostCrowdedFood = foodAreas.reduce((prev, curr) => ((prev.crowd_count / prev.capacity) > (curr.crowd_count / curr.capacity) ? prev : curr));
       if (mostCrowdedFood && mostCrowdedFood.crowd_count / mostCrowdedFood.capacity > 0.8) {
         suggestions.push({
           type: 'service',
@@ -92,7 +92,7 @@ async function startServer() {
     const info = db.prepare('INSERT INTO incidents (zone, issue_type, description) VALUES (?, ?, ?)').run(safeZone, issue_type, safeDesc);
     const incident = { id: info.lastInsertRowid, zone: safeZone, issue_type, description: safeDesc, timestamp: new Date() };
     io.emit('new_incident', incident);
-    
+
     res.status(201).json(incident);
   });
 
@@ -115,7 +115,7 @@ async function startServer() {
       }
       const ai = new GoogleGenAI({ apiKey });
       const prompt = "Act as an expert stadium operations manager using a proactive experience engine. Briefly summarize the current venue state using bullet points. Focus on predicting bottlenecks before wait times spike. Mention actionable Proactive Directives for staff such as deploying virtual queues, triggering capacity-based pricing promos, sending app push nudges, or adjusting dynamic digital signage routing. Keep it extremely concise and use markdown formatting: data=" + JSON.stringify(zones) + " incidents=" + JSON.stringify(incidents);
-      
+
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: prompt
@@ -136,7 +136,7 @@ async function startServer() {
       const maxChange = Math.max(2, Math.floor(cap * 0.01));
       const variation = Math.floor(Math.random() * (maxChange * 2 + 1)) - maxChange;
       let newCount = zone.crowd_count + variation;
-      
+
       if (newCount < 0) newCount = 0;
       if (newCount > cap) newCount = cap; // Cap
 
@@ -181,12 +181,12 @@ async function startServer() {
     const distPath = path.join(__dirname, 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
-       res.sendFile(path.join(distPath, 'index.html'));
+      res.sendFile(path.join(distPath, 'index.html'));
     });
   }
 
   httpServer.listen(PORT, '0.0.0.0', () => {
-    console.log(`CrowdPulse server running on http://localhost:${PORT}`);
+    console.log(`Server running on port ${PORT}`);
   });
 }
 
