@@ -4,23 +4,8 @@
     "module": "ESNext",
     "outDir": "dist",
     "noEmit": false,
-    "experimentalDecorators": true,
-    "useDefineForClassFields": false,
-    "lib": [
-      "ES2022",
-      "DOM",
-      "DOM.Iterable"
-    ],
-    "skipLibCheck": true,
     "moduleResolution": "bundler",
-    "isolatedModules": true,
-    "moduleDetection": "force",
-    "allowJs": true,
     "jsx": "react-jsx",
-    "paths": {
-      "@/*": [
-        "./*"
-      ]
-    }
+    "skipLibCheck": true
   }
 }
